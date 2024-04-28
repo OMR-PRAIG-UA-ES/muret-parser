@@ -11,9 +11,12 @@ from sklearn.model_selection import KFold, train_test_split
 
 def parser_args():
     parser = argparse.ArgumentParser(
+        prog="MuRET dataset parser",
+        usage="python main.py --muret_json_folder_path <path> --output_folder_path <path> [--k <int>]",
         description="MuRET dataset parser. Converts a full page sample (multiple staves) into multiple individual samples, one for each staff.\
             Creates a new folder (output_folder_path) with the new image samples (output_folder_path/Images) and their corresponding sequences (output_folder_path/GT).\
-                Creates k-folds (output_folder_path/Folds) for the dataset (Train: 60%, Validation: 20%, Test: 20%)."
+                Creates k-folds (output_folder_path/Folds) for the dataset (Train: 60%, Validation: 20%, Test: 20%).",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--muret_json_folder_path",
@@ -101,6 +104,9 @@ def parsing_muret_json(muret_json_folder_path: str, output_folder_path: str):
                     img_path = data.get("url", None)
                 assert img_path is not None, f"No image path found for JSON file {file}"
                 img = download_image(img_path)
+                if img is None:
+                    print(f"Failed to download image {img_path}")
+                    continue
 
                 # Iterate over staves
                 for page in data["pages"]:
@@ -207,3 +213,4 @@ if __name__ == "__main__":
         output_folder_path=args.output_folder_path,
     )
     create_kfolds(output_folder_path=args.output_folder_path, k=args.k)
+    print("Done!")
